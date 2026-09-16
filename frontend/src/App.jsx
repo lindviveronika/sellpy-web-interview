@@ -1,4 +1,3 @@
-import React from 'react'
 import { AppBar, Toolbar, Typography } from '@mui/material'
 import { TodoLists } from './todos/components/TodoLists'
 
@@ -22,6 +21,7 @@ const contentWrapperStyle = {
   maxWidth: '80rem',
   flexGrow: 1,
 }
+
 const MainWrapper = ({ children }) => {
   return (
     <div style={mainWrapperStyle}>
