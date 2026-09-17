@@ -13,17 +13,24 @@ export const TodoListForm = ({ todoList, saveTodoList, isSaving }) => {
     setLastSave(result.error ? { status: 'error', todos } : { status: 'success', todos })
   }
 
-  const handleChangeTodoName = (index, name) => {
-    const newTodos = [...todos.slice(0, index), name, ...todos.slice(index + 1)]
-    setTodos(newTodos)
+  const handleChangeTodoName = (id, name) => {
+    const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, name } : todo))
+    setTodos(updatedTodos)
   }
 
-  const handleDeleteTodo = (index) => {
-    setTodos([...todos.slice(0, index), ...todos.slice(index + 1)])
+  const handleCompletedUpdate = (id, completed) => {
+    const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, completed } : todo))
+    setTodos(updatedTodos)
+  }
+
+  const handleDeleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id))
   }
 
   const handleAddTodo = () => {
-    setTodos([...todos, ''])
+    const id = crypto.randomUUID()
+    const newTodos = [...todos, { id, name: '', completed: false }]
+    setTodos(newTodos)
   }
 
   // Only show status message if the todo reference hasn't changed since the last save
@@ -32,17 +39,22 @@ export const TodoListForm = ({ todoList, saveTodoList, isSaving }) => {
   return (
     <Card sx={{ margin: '0 1rem' }}>
       <CardContent>
-        <Typography component='h2'>{todoList.title}</Typography>
+        <Typography component='h2' style={{ marginBottom: '1rem' }}>
+          {todoList.title}
+        </Typography>
         <form
           onSubmit={handleSubmit}
-          style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+          style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, gap: '1rem' }}
         >
-          {todos.map((name, index) => (
+          {todos.map(({ id, name, completed }, index) => (
             <TodoItem
+              key={id}
               number={index + 1}
               name={name}
-              onNameChange={(name) => handleChangeTodoName(index, name)}
-              onDelete={() => handleDeleteTodo(index)}
+              completed={completed}
+              onNameChange={(name) => handleChangeTodoName(id, name)}
+              onDelete={() => handleDeleteTodo(id)}
+              onCompleteChange={(completed) => handleCompletedUpdate(id, completed)}
             />
           ))}
           <CardActions>

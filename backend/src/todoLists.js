@@ -2,27 +2,40 @@ import express from 'express'
 
 const router = express.Router()
 
+class TodoList {
+  constructor(id, title, todos) {
+    this.id = id
+    this.title = title
+    this.todos = todos
+  }
+}
+
 const todoLists = new Map([
-  [
-    '0000000001',
-    {
-      id: '0000000001',
-      title: 'First List',
-      todos: ['First todo of first list!'],
-    },
-  ],
-  [
-    '0000000002',
-    {
-      id: '0000000002',
-      title: 'Second List',
-      todos: ['First todo of second list!'],
-    },
-  ],
+  ['0000000001', new TodoList('0000000001', 'First List', [])],
+  ['0000000002', new TodoList('0000000002', 'Second List', [])],
 ])
 
+function validateUniqueIds(ids) {
+  return ids.length === new Set(ids).size
+}
+
+function validateTodo(todo) {
+  return (
+    todo &&
+    typeof todo === 'object' &&
+    typeof todo.name === 'string' &&
+    typeof todo.completed === 'boolean' &&
+    typeof todo.id === 'string'
+  )
+}
+
 function validateTodos(data) {
-  return data && Array.isArray(data.todos) && data.todos.every((todo) => typeof todo === 'string')
+  return (
+    data &&
+    Array.isArray(data.todos) &&
+    data.todos.every(validateTodo) &&
+    validateUniqueIds(data.todos.map((todo) => todo.id))
+  )
 }
 
 router.param('id', (req, res, next, id) => {

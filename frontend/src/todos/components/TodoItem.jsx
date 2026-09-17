@@ -1,9 +1,13 @@
 import DeleteIcon from '@mui/icons-material/Delete'
-import { Button, TextField, Typography } from '@mui/material'
+import { Button, Checkbox, TextField, Typography } from '@mui/material'
 
-export const TodoItem = ({ number, name, onNameChange, onDelete }) => {
+export const TodoItem = ({ number, name, completed, onNameChange, onDelete, onCompleteChange }) => {
   const handleNameChange = (event) => {
     onNameChange(event.target.value)
+  }
+
+  const handleCompleteChange = (event) => {
+    onCompleteChange(event.target.checked)
   }
 
   return (
@@ -11,8 +15,9 @@ export const TodoItem = ({ number, name, onNameChange, onDelete }) => {
       <Typography sx={{ margin: '8px' }} variant='h6'>
         {number}
       </Typography>
+      <Checkbox checked={completed} onChange={handleCompleteChange} />
       <TextField
-        sx={{ flexGrow: 1, marginTop: '1rem' }}
+        sx={{ flexGrow: 1 }}
         label='What to do?'
         value={name}
         onChange={handleNameChange}
