@@ -8,22 +8,16 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { useFetchData } from '../../hooks/useFetchData'
-import { useTriggerFetchData } from '../../hooks/useTriggerFetchData'
-import { TodoListForm } from './TodoListForm'
+import { TodoList } from './TodoList'
 
 export const TodoLists = ({ style }) => {
+  const [activeTodoListId, setActiveTodoListId] = useState(null)
   const { data: todoLists, isLoading, error } = useFetchData('/todo-lists')
-  const { trigger: fetchTodoList, data: activeTodoList } = useTriggerFetchData()
-
-  const handleSaveTodoList = (id, { todos }) => {
-    // TODO: implement saving updated todo list
-    console.log('save', id, todos)
-  }
 
   const handleTodoListClick = (id) => {
-    fetchTodoList(`/todo-lists/${id}`)
+    setActiveTodoListId(id)
   }
 
   if (isLoading) return <div>Loading todos...</div>
@@ -47,13 +41,7 @@ export const TodoLists = ({ style }) => {
           </List>
         </CardContent>
       </Card>
-      {activeTodoList && (
-        <TodoListForm
-          key={activeTodoList.id} // use key to make React recreate component to reset internal state
-          todoList={activeTodoList}
-          saveTodoList={handleSaveTodoList}
-        />
-      )}
+      {activeTodoListId && <TodoList key={activeTodoListId} id={activeTodoListId} />}
     </Fragment>
   )
 }

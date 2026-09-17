@@ -1,15 +1,20 @@
-import React, { useState } from 'react'
-import { TextField, Card, CardContent, CardActions, Button, Typography } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
+import { Button, Card, CardActions, CardContent, TextField, Typography } from '@mui/material'
+import { useState } from 'react'
 
-export const TodoListForm = ({ todoList, saveTodoList }) => {
+export const TodoListForm = ({ todoList, saveTodoList, isSaving }) => {
   const [todos, setTodos] = useState(todoList.todos)
+  const [lastSave, setLastSave] = useState(null)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    saveTodoList(todoList.id, { todos })
+    const result = await saveTodoList({ todos })
+    setLastSave(result.error ? { status: 'error', todos } : { status: 'success', todos })
   }
+
+  // Only show status message if the todo reference hasn't changed since the last save
+  const saveStatus = lastSave?.todos === todos ? lastSave.status : null
 
   return (
     <Card sx={{ margin: '0 1rem' }}>
@@ -63,9 +68,16 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
             >
               Add Todo <AddIcon />
             </Button>
-            <Button type='submit' variant='contained' color='primary'>
-              Save
+            <Button type='submit' variant='contained' color='primary' disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save'}
             </Button>
+            {saveStatus && (
+              <Typography color={saveStatus === 'error' ? 'error' : 'green'} variant='body2'>
+                {saveStatus === 'error'
+                  ? 'Something went wrong while saving the todo list.'
+                  : 'Todo list saved successfully.'}
+              </Typography>
+            )}
           </CardActions>
         </form>
       </CardContent>

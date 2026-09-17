@@ -21,6 +21,10 @@ const todoLists = new Map([
   ],
 ])
 
+function validateTodos(data) {
+  return data && Array.isArray(data.todos) && data.todos.every((todo) => typeof todo === 'string')
+}
+
 router.param('id', (req, res, next, id) => {
   const todoList = todoLists.get(id)
 
@@ -33,7 +37,7 @@ router.param('id', (req, res, next, id) => {
   next()
 })
 
-router.get('/', (req, res) =>
+router.get('/', (_req, res) =>
   res.json(
     Array.from(todoLists.values()).map((todoList) => ({ id: todoList.id, title: todoList.title })),
   ),
@@ -43,17 +47,17 @@ router.get('/:id', (req, res) => {
   res.json(req.todoList)
 })
 
-router.post('/:id/todos', (req, res) => {
+router.put('/:id/todos', (req, res) => {
   const todoList = req.todoList
   const data = req.body
 
-  if (!data || !data.todo) {
+  if (!validateTodos(data)) {
     res.status(400).send('Invalid request body')
     return
   }
 
-  todoList.todos.push(data.todo)
-  res.status(201).json(todoList)
+  todoList.todos = data.todos
+  res.json(todoList)
 })
 
 export default router

@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchData } from '../utils/fetchData'
 
-/**
- *
- * @param {string} url
- * @returns {{ data: any, error: Error|null, isLoading: boolean }}
- */
 export function useFetchData(url) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
