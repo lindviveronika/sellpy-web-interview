@@ -12,13 +12,9 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
   const latestTodos = useRef()
   const timeoutRef = useRef(null)
 
-  const updateLastSave = (todos, result) => {
-    setLastSave({ todos, hasError: !!result.error })
-  }
-
   const saveTodos = async (todos) => {
     const result = await saveTodoList({ todos })
-    updateLastSave(todos, result)
+    setLastSave({ todos, hasError: !!result.error })
   }
 
   const updateTodos = async (updatedTodos, debounce = false) => {
@@ -64,7 +60,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
     return async () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
-        await saveTodoList({ todos: latestTodos.current }) // flush debounced changes
+        await saveTodoList({ todos: latestTodos.current }) // flush debounced changes when component unmounts
       }
     }
   }, [saveTodoList])
