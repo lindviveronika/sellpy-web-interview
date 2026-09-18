@@ -26,7 +26,6 @@ export function useFetchData(url) {
     if (result.error) {
       console.error(result.error)
       setError(result.error)
-      setData(null)
       setIsLoading(false)
       return
     }

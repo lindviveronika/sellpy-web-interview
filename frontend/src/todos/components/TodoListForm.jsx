@@ -4,10 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import { TodoItem } from './TodoItem'
 
 const DEBOUNCE_DELAY = 300
-const SAVE_STATUS = {
-  ERROR: 'error',
-  SUCCESS: 'success',
-}
 
 export const TodoListForm = ({ todoList, saveTodoList }) => {
   const [todos, setTodos] = useState(todoList.todos)
@@ -17,7 +13,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
   const timeoutRef = useRef(null)
 
   const updateLastSave = (todos, result) => {
-    setLastSave({ todos, status: result.error ? SAVE_STATUS.ERROR : SAVE_STATUS.SUCCESS })
+    setLastSave({ todos, hasError: !!result.error })
   }
 
   const saveTodos = async (todos) => {
@@ -73,9 +69,9 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
     }
   }, [saveTodoList])
 
-  // Only show status message if the todo reference hasn't changed since the last save
+  // Only show error message if the todo reference hasn't changed since the last save
   // New reference is created each time the todos state is updated
-  const saveStatus = lastSave && lastSave.todos === todos ? lastSave.status : null
+  const hasSaveError = lastSave && lastSave.todos === todos ? lastSave.hasError : false
 
   return (
     <Card sx={{ margin: '0 1rem' }}>
@@ -99,7 +95,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
             <Button type='button' color='primary' onClick={handleAddTodo}>
               Add Todo <AddIcon />
             </Button>
-            {saveStatus === SAVE_STATUS.ERROR && (
+            {hasSaveError && (
               <Typography variant='body2' color='error'>
                 Failed to save changes.
               </Typography>
