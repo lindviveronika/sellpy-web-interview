@@ -3,7 +3,7 @@ import { useFetchData } from '../../hooks/useFetchData'
 import { fetchData } from '../../utils/fetchData'
 import { TodoListForm } from './TodoListForm'
 
-export const TodoList = ({ id }) => {
+export const TodoList = ({ id, onUpdate }) => {
   const [isSaving, setIsSaving] = useState(false)
   const { data: todoList, isLoading, error } = useFetchData(`/todo-lists/${id}`)
 
@@ -16,6 +16,11 @@ export const TodoList = ({ id }) => {
     })
 
     setIsSaving(false)
+
+    if (onUpdate && !result.error) {
+      onUpdate()
+    }
+
     return result
   }
 

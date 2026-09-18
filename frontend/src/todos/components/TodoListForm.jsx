@@ -34,7 +34,8 @@ export const TodoListForm = ({ todoList, saveTodoList, isSaving }) => {
   }
 
   // Only show status message if the todo reference hasn't changed since the last save
-  const saveStatus = lastSave?.todos === todos ? lastSave.status : null
+  // New reference is created each time the todos state is updated
+  const saveStatus = lastSave && lastSave.todos === todos ? lastSave.status : null
 
   return (
     <Card sx={{ margin: '0 1rem' }}>

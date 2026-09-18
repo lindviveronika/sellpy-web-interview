@@ -15,6 +15,26 @@ const todoLists = new Map([
   ['0000000002', new TodoList('0000000002', 'Second List', [])],
 ])
 
+// Todo list is not considered completed if it has no todos
+function isCompleted(todoList) {
+  return todoList.todos.length > 0 && todoList.todos.every((todo) => todo.completed)
+}
+
+function toSummary(todoList) {
+  return {
+    id: todoList.id,
+    title: todoList.title,
+    completed: isCompleted(todoList),
+  }
+}
+
+function toDetailed(todoList) {
+  return {
+    ...toSummary(todoList),
+    todos: todoList.todos,
+  }
+}
+
 function validateUniqueIds(ids) {
   return ids.length === new Set(ids).size
 }
@@ -50,14 +70,10 @@ router.param('id', (req, res, next, id) => {
   next()
 })
 
-router.get('/', (_req, res) =>
-  res.json(
-    Array.from(todoLists.values()).map((todoList) => ({ id: todoList.id, title: todoList.title })),
-  ),
-)
+router.get('/', (_req, res) => res.json(Array.from(todoLists.values()).map(toSummary)))
 
 router.get('/:id', (req, res) => {
-  res.json(req.todoList)
+  res.json(toDetailed(req.todoList))
 })
 
 router.put('/:id/todos', (req, res) => {
@@ -70,7 +86,7 @@ router.put('/:id/todos', (req, res) => {
   }
 
   todoList.todos = data.todos
-  res.json(todoList)
+  res.json(toDetailed(todoList))
 })
 
 export default router
