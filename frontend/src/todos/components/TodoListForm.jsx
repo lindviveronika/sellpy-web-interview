@@ -1,37 +1,77 @@
 import AddIcon from '@mui/icons-material/Add'
 import { Button, Card, CardActions, CardContent, Typography } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TodoItem } from './TodoItem'
 
-export const TodoListForm = ({ todoList, saveTodoList, isSaving }) => {
+const DEBOUNCE_DELAY = 300
+const SAVE_STATUS = {
+  ERROR: 'error',
+  SUCCESS: 'success',
+}
+
+export const TodoListForm = ({ todoList, saveTodoList }) => {
   const [todos, setTodos] = useState(todoList.todos)
   const [lastSave, setLastSave] = useState(null)
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+  const latestTodos = useRef()
+  const timeoutRef = useRef(null)
+
+  const updateLastSave = (todos, result) => {
+    setLastSave({ todos, status: result.error ? SAVE_STATUS.ERROR : SAVE_STATUS.SUCCESS })
+  }
+
+  const saveTodos = async (todos) => {
     const result = await saveTodoList({ todos })
-    setLastSave(result.error ? { status: 'error', todos } : { status: 'success', todos })
+    updateLastSave(todos, result)
+  }
+
+  const updateTodos = async (updatedTodos, debounce = false) => {
+    latestTodos.current = updatedTodos
+    setTodos(updatedTodos)
+
+    clearTimeout(timeoutRef.current)
+    timeoutRef.current = null
+
+    if (debounce) {
+      timeoutRef.current = setTimeout(async () => {
+        timeoutRef.current = null
+        const todos = latestTodos.current
+        await saveTodos(todos)
+      }, DEBOUNCE_DELAY)
+      return
+    }
+
+    await saveTodos(updatedTodos)
   }
 
   const handleChangeTodoName = (id, name) => {
-    const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, name } : todo))
-    setTodos(updatedTodos)
+    updateTodos(
+      todos.map((todo) => (todo.id === id ? { ...todo, name } : todo)),
+      true,
+    )
   }
 
   const handleCompletedUpdate = (id, completed) => {
-    const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, completed } : todo))
-    setTodos(updatedTodos)
+    updateTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed } : todo)))
   }
 
   const handleDeleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id))
+    updateTodos(todos.filter((todo) => todo.id !== id))
   }
 
   const handleAddTodo = () => {
     const id = crypto.randomUUID()
-    const newTodos = [...todos, { id, name: '', completed: false }]
-    setTodos(newTodos)
+    updateTodos([...todos, { id, name: '', completed: false }])
   }
+
+  useEffect(() => {
+    return async () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        await saveTodoList({ todos: latestTodos.current }) // flush debounced changes
+      }
+    }
+  }, [saveTodoList])
 
   // Only show status message if the todo reference hasn't changed since the last save
   // New reference is created each time the todos state is updated
@@ -43,10 +83,7 @@ export const TodoListForm = ({ todoList, saveTodoList, isSaving }) => {
         <Typography component='h2' style={{ marginBottom: '1rem' }}>
           {todoList.title}
         </Typography>
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, gap: '1rem' }}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, gap: '1rem' }}>
           {todos.map(({ id, name, completed }, index) => (
             <TodoItem
               key={id}
@@ -62,18 +99,13 @@ export const TodoListForm = ({ todoList, saveTodoList, isSaving }) => {
             <Button type='button' color='primary' onClick={handleAddTodo}>
               Add Todo <AddIcon />
             </Button>
-            <Button type='submit' variant='contained' color='primary' disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save'}
-            </Button>
-            {saveStatus && (
-              <Typography color={saveStatus === 'error' ? 'error' : 'green'} variant='body2'>
-                {saveStatus === 'error'
-                  ? 'Something went wrong while saving the todo list.'
-                  : 'Todo list saved successfully.'}
+            {saveStatus === SAVE_STATUS.ERROR && (
+              <Typography variant='body2' color='error'>
+                Failed to save changes.
               </Typography>
             )}
           </CardActions>
-        </form>
+        </div>
       </CardContent>
     </Card>
   )
