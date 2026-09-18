@@ -10,7 +10,7 @@ export const TodoItem = ({ number, name, completed, onNameChange, onDelete, onCo
     onCompleteChange(event.target.checked)
   }
 
-  const ariaName = name ?? `todo number ${number}`
+  const ariaName = name || `todo number ${number}`
 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
