@@ -27,8 +27,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
     if (debounce) {
       timeoutRef.current = setTimeout(async () => {
         timeoutRef.current = null
-        const todos = latestTodos.current
-        await saveTodos(todos)
+        await saveTodos(latestTodos.current)
       }, DEBOUNCE_DELAY)
       return
     }
